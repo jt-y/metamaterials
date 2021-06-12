@@ -16,7 +16,7 @@ tar -xzf <filename.tar.gz>
 ```
 Navigate into this directory that you just untarred. There should be two .tar.gz files and a README file. Use the same command to untar the two .tar.gz files. 
 
-## Install the user space
+## Install user space
 The two directories that you just untarred are installation packages for the user and kernel space respectively. You can tell them apart from their names. Navigate into the gpib-user directory. Run the following commands. Enter your password when prompted.
 
 ```
@@ -24,7 +24,7 @@ sudo ./configure
 sudo make
 sudo make install
 ```
-## Install the kernel space
+## Install kernel space
 Navigate into the gpib-kernel directory. Run the following commands. 
 
 ```
@@ -32,7 +32,7 @@ sudo make
 sudo make install
 ```
 
-## Download the firmware binary
+## Download firmware
 Navigate back to your desktop. Run the following command to download the firmware for 82357B/82357A to your desktop. Untar it with the command mentioned above. 
 ```
 wget --content-disposition --no-check-certificate http://linux-gpib.sourceforge.net/firmware/gpib_firmware-2008-08-10.tar.gz
@@ -49,7 +49,7 @@ sudo make
 sudo make install
 ```
 
-## Edit the gpib.conf file
+## Edit gpib.conf
 Navigate to /usr/local/etc. Use the `ls` command to see the files and directories in here. There should be a file named "gpib.conf" and a directory named "udev" Run the following command.
 
 ```
