@@ -50,7 +50,7 @@ sudo make install
 ```
 
 ## Edit the gpib.conf file
-Navigate to /usr/local/etc. Use the `<ls>` command to see the files and directories in here. There should be a file named "gpib.conf" and a directory named "udev" Run the following command.
+Navigate to /usr/local/etc. Use the `ls` command to see the files and directories in here. There should be a file named "gpib.conf" and a directory named "udev" Run the following command.
 
 ```
 sudo nano gpib.conf
@@ -74,7 +74,7 @@ sudo modprobe agilent_82357a
 
 ## Establish connection between the device and your computer
 
-Plug the GPIB-USB converter into your computer. Run `<lsusb>`. You should see a list of devices. Find the line that corresponds to your GPIB-USB converter. That should look something like this:
+Plug the GPIB-USB converter into your computer. Run `lsusb`. You should see a list of devices. Find the line that corresponds to your GPIB-USB converter. That should look something like this:
 
 ```
 ...
@@ -86,7 +86,7 @@ Take note of the bus and device numbers. In the above example, the Bus# is 001 a
 ```
 sudo fxload -D /dev/bus/usb/Bus#/Device#  -t fx2 -I /home/metamaterials/Desktop/gpib_firmware-2008-08-10/agilent_82357a/measat_releaseX1.8.hex 
 ```
-Run `<lsusb>` again and confirm the Device# has increased by 1.
+Run `lsusb` again and confirm the Device# has increased by 1.
 
 Run the following command again with the new Bus# and Device# set appropriately.
 
@@ -96,13 +96,13 @@ sudo fxload -D /dev/bus/usb/Bus#/Device#  -t fx2 -I /home/metamaterials/Desktop/
 
 The 3 LEDs on the adaptor should be lit.
 
-Change permissions on `</dev/gpib0>`:
+Change permissions on `/dev/gpib0`:
 
 ```
 sudo chmod 777 /dev/gpib0
 ```
 
-Now, initialize the dongle. `<gpib_config>` has some trouble finding the library, so create a symbolic link first:
+Now, initialize the dongle. `gpib_config` has some trouble finding the library, so create a symbolic link first:
 
 ```
 sudo ln -s /usr/local/lib/libgpib.so.0 /lib/libgpib.so.0
