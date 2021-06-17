@@ -1,4 +1,4 @@
-# metamaterials
+# Metamaterials
 Codes and instructions to control the setup that scans the acoustic modes of metamaterial models
 
 ## Codes
