@@ -1,0 +1,29 @@
+
+CHIRP DATASETS AVAILABLE - DO NOT MESS UP!
+    0: 6000 - 13000 Hz, 701 samples
+    1: 11000 - 12000 Hz, 201 samples
+    2: 9100.1 - 9500.1 Hz, 81 samples
+    3: 7500 - 10000 Hz, 1251 samples
+    4: 13000 - 15500 Hz, 251 samples
+    5: 6700 - 7200 Hz, 201 samples
+    
+EMPTY:
+    0: 6000-13000 Hz, 36 samples
+
+SCPF2 SET:
+    0: 5500 - 15500 Hz, 2001 samples
+    1: 6700 - 7200 Hz, 251 samples
+    2: 11000 - 12000 Hz, 501 samples
+    3: 5502.5 - 15502.5 Hz, 2001 samples
+
+SCPFD SET:    
+    0: 6700 - 6850 Hz, 151 samples
+    1: 5000 - 15000 Hz, 1001 samples
+    2: 11000 - 12000 Hz, 251 samples
+    3: 6724 - 6744 Hz, 201 samples
+    4: 6731.8 - 6732.1 Hz, 61 samples
+    5: 6725 - 6740 Hz, 301 samples
+    6: 11448 - 11468 Hz, 401 samples
+    7:
+    8:
+    9: 5000 - 15000 Hz, 201 samples, CALIBRATION
