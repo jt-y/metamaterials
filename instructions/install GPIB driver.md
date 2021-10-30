@@ -119,6 +119,8 @@ Detele
 /usr/local/etc/udev/rules.d
 ```
 
+Type 'make uninstall' as root in the same directory from which the package was originally installed. (linux-gpib-user-4.x.x/)
+
 ## Useful resources
 1. [Basic Linux command lines](https://ubuntu.com/tutorials/command-line-for-beginners#3-opening-a-terminal)
 2. [GPIB interfacing using Agilent 82357B on Ubuntu Linux](https://gist.github.com/turingbirds/6eb05c9267a6437183a9567700e8581a)
