@@ -111,7 +111,13 @@ sudo gpib_config
 
 Now only the green LED should be lit. This means that you have successfully established connection between your computer and the device!
 
+## Uninstall the driver
 
+Detele
+```
+/usr/local/etc/gpib.conf
+/usr/local/etc/udev/rules.d
+```
 
 ## Useful resources
 1. [Basic Linux command lines](https://ubuntu.com/tutorials/command-line-for-beginners#3-opening-a-terminal)
