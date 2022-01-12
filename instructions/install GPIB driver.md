@@ -102,10 +102,9 @@ Change permissions on `/dev/gpib0`:
 sudo chmod 777 /dev/gpib0
 ```
 
-Now, initialize the dongle. `gpib_config` has some trouble finding the library, so create a symbolic link first:
+Now, initialize the dongle
 
 ```
-sudo ln -s /usr/local/lib/libgpib.so.0 /lib/libgpib.so.0
 sudo gpib_config
 ```
 
