@@ -1,4 +1,4 @@
-import chirp_functions as proc
+import archive.processing.chirp_functions as proc
 import numpy as np
 
 branch = 8
