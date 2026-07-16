@@ -1,6 +1,9 @@
 import os
 import pickle
 import glob
+import csv
+from collections import defaultdict
+from pathlib import Path
 import skimage
 import skimage.transform
 import numpy as np
@@ -17,6 +20,180 @@ import stmpy
 import sys
 
 sys.path.append('../../functions')
+
+
+UNIT_TO_HZ = {
+    'hz': 1.0,
+    'khz': 1.0e3,
+    'mhz': 1.0e6,
+    'ghz': 1.0e9,
+}
+
+
+def frequency_scale_to_hz(column_name):
+    """Return the scale that converts a frequency column to hertz."""
+    normalized = column_name.casefold().replace(' ', '')
+    for unit, scale in UNIT_TO_HZ.items():
+        if f'({unit})' in normalized:
+            return scale
+    raise ValueError(f'Could not identify the unit in {column_name!r}')
+
+
+def real_part(value):
+    """Parse a COMSOL real or complex scalar and return its real part."""
+    return complex(value.strip().replace('i', 'j')).real
+
+
+def extract_eigenfrequencies(csv_path):
+    """Extract sweep coordinates and Eigenfrequency values from COMSOL CSV."""
+    b_index = None
+    eigenfrequency_index = None
+    scale_to_hz = None
+    b_values = []
+    eigenfrequencies_hz = []
+
+    with Path(csv_path).open(newline='', encoding='utf-8-sig') as csv_file:
+        for row in csv.reader(csv_file):
+            if not row:
+                continue
+
+            if row[0].lstrip().startswith('%'):
+                header = [cell.strip().lstrip('% ') for cell in row]
+                eigenfrequency_columns = [
+                    index for index, name in enumerate(header)
+                    if name.casefold().startswith('eigenfrequency')
+                ]
+                if eigenfrequency_columns:
+                    eigenfrequency_index = eigenfrequency_columns[-1]
+                    scale_to_hz = frequency_scale_to_hz(
+                        header[eigenfrequency_index]
+                    )
+                    b_columns = [
+                        index for index, name in enumerate(header)
+                        if name.casefold() == 'b'
+                    ]
+                    if not b_columns:
+                        raise ValueError(f'No b column found in {csv_path}')
+                    b_index = b_columns[0]
+                continue
+
+            if b_index is None or eigenfrequency_index is None:
+                raise ValueError(
+                    f'No Eigenfrequency column found in {csv_path}'
+                )
+
+            b_values.append(float(row[b_index]))
+            eigenfrequencies_hz.append(
+                real_part(row[eigenfrequency_index]) * scale_to_hz
+            )
+
+    return {
+        'b': np.asarray(b_values),
+        'eigenfrequency_hz': np.asarray(eigenfrequencies_hz),
+    }
+
+
+def organize_band_frequencies(dataset, max_bands=None):
+    """Sort frequencies at each sweep coordinate and optionally cap modes."""
+    frequencies_by_b = defaultdict(list)
+    for b_value, frequency in zip(
+        dataset['b'], dataset['eigenfrequency_hz']
+    ):
+        frequencies_by_b[b_value].append(frequency)
+
+    if not frequencies_by_b:
+        raise ValueError('No eigenfrequencies found in dataset')
+
+    if max_bands is not None:
+        insufficient_b_values = [
+            b_value for b_value, frequencies in frequencies_by_b.items()
+            if len(frequencies) < max_bands
+        ]
+        if insufficient_b_values:
+            raise ValueError(
+                f'Dataset has fewer than {max_bands} bands at '
+                f'{len(insufficient_b_values)} b values'
+            )
+
+    organized = dict(dataset)
+    organized['frequencies_by_b_hz'] = {
+        b_value: np.sort(frequencies)[:max_bands]
+        for b_value, frequencies in sorted(frequencies_by_b.items())
+    }
+    organized['b'] = np.concatenate([
+        np.full(len(frequencies), b_value)
+        for b_value, frequencies in organized['frequencies_by_b_hz'].items()
+    ])
+    organized['eigenfrequency_hz'] = np.concatenate(
+        list(organized['frequencies_by_b_hz'].values())
+    )
+    return organized
+
+
+def extract_band_structure(csv_path, max_bands=None):
+    """Extract and organize a COMSOL band structure in frequency order."""
+    return organize_band_frequencies(
+        extract_eigenfrequencies(csv_path), max_bands=max_bands
+    )
+
+
+def band_frequency_matrix(dataset):
+    """Return a (sweep points, bands) frequency matrix in hertz."""
+    return np.stack(list(dataset['frequencies_by_b_hz'].values()))
+
+
+def calculate_bandwidth(dataset, band_index):
+    """Return the minimum, maximum, and bandwidth of one band in hertz."""
+    flat_band_hz = band_frequency_matrix(dataset)[:, band_index]
+    return {
+        'minimum_hz': flat_band_hz.min(),
+        'maximum_hz': flat_band_hz.max(),
+        'bandwidth_hz': np.ptp(flat_band_hz),
+    }
+
+
+def set_axes_size(ax, width, height):
+    """Set the physical axes size in inches while preserving margins."""
+    margins = ax.figure.subplotpars
+    ax.figure.set_size_inches(
+        width / (margins.right - margins.left),
+        height / (margins.top - margins.bottom),
+    )
+
+
+def plot_band_structure(dataset, highlighted_band):
+    """Plot a compact paper-style band structure with one black band."""
+    frequencies_by_b = dataset['frequencies_by_b_hz']
+    b_values = np.asarray(list(frequencies_by_b))
+    bands_khz = band_frequency_matrix(dataset) / 1e3
+    highlighted_band %= bands_khz.shape[1]
+
+    fig, ax = plt.subplots(dpi=300)
+    for band_index in range(bands_khz.shape[1]):
+        if band_index != highlighted_band:
+            ax.plot(
+                b_values, bands_khz[:, band_index],
+                color='#BBBBBB', linewidth=0.75,
+            )
+    ax.plot(
+        b_values, bands_khz[:, highlighted_band],
+        color='black', linewidth=0.75,
+    )
+
+    set_axes_size(ax, width=1.4, height=1.4 * 3 / 4)
+    ax.set_xlim(0, b_values[-1])
+    ax.set_ylim(10, 16)
+    ax.set_xticks([0, 1, 1.5, b_values[-1]], [r"$\Gamma$", "K", "M", r"$\Gamma$"])
+    ax.set_yticks(np.linspace(10, 16, 3))
+    ax.tick_params(
+        axis='both', width=0.25, length=1,
+        # labelbottom=False, labelleft=False,
+    )
+    ax.set_ylabel("Frequency (kHz)")
+    for spine in ax.spines.values():
+        spine.set_linewidth(0.25)
+
+    return fig, ax
 
 
 
