@@ -1,6 +1,9 @@
 
+# symlinks
 data
 output
+notes
 
 __pycache__
 .DS_Store
+
